@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FD Vault
 
-## Getting Started
+FD Vault is a modern full-stack app for managing family fixed deposits in one place. It replaces manual tracking with a secure dashboard for creating deposits, monitoring maturity dates, renewing or withdrawing funds, and importing records in bulk from Excel or CSV files.
 
-First, run the development server:
+## What the app includes
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Secure authentication with NextAuth credentials login
+- Family-based workspace model with admin and viewer roles
+- Interactive dashboard with portfolio KPIs, maturity alerts, charts, and recent activity
+- FD list view with search, filtering, sorting, and date-range controls
+- Detailed FD pages with status, transaction history, and renewal lineage
+- Admin actions for creating, editing, deleting, renewing, and withdrawing FDs
+- Bulk import workflow for spreadsheets with validation and duplicate detection
+- Account settings page for updating profile and password information
+
+## Current stack
+
+- Frontend: Next.js 15, React, TypeScript, Tailwind CSS
+- UI libraries: Recharts, Framer Motion, Lucide React
+- Backend: Next.js route handlers, Auth.js / NextAuth
+- Database: PostgreSQL with Prisma ORM
+- File import: SheetJS (XLSX)
+- Validation: Zod
+
+## Prerequisites
+
+- Node.js 20+
+- PostgreSQL database (local or hosted)
+
+## Local setup
+
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+
+2. Create environment variables
+   ```bash
+   cp .env.example .env
+   ```
+   Update the values in .env for your database and auth setup.
+
+3. Create the database schema
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+
+4. Seed demo data and default users
+   ```bash
+   npx prisma db seed
+   ```
+
+5. Start the development server
+   ```bash
+   npm run dev
+   ```
+
+Open http://localhost:3000 to view the app.
+
+## Environment variables
+
+The app expects these variables in your environment:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fd_vault?schema=public"
+DIRECT_URL="postgresql://postgres:postgres@localhost:5432/fd_vault?schema=public"
+NEXTAUTH_SECRET="replace-with-a-random-secret"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For Neon or other hosted PostgreSQL providers, use the appropriate connection strings instead.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Seeded demo accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The seed script creates a family workspace with the following accounts:
 
-## Learn More
+- Admin: admin@family.com / admin123
+- Viewer: viewer@family.com / viewer123
 
-To learn more about Next.js, take a look at the following resources:
+## Bulk import format
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Admins can import FDs from Excel or CSV files through the import screen. The import flow supports:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- automatic column mapping
+- validation of required fields
+- duplicate detection against existing records
+- batch insertion into the database
 
-## Deploy on Vercel
+The import page also lets you download a sample template directly from the UI.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Useful commands
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Start dev server
+  ```bash
+  npm run dev
+  ```
+
+- Build for production
+  ```bash
+  npm run build
+  ```
+
+- Open Prisma Studio
+  ```bash
+  npx prisma studio
+  ```
+
+- Reset and re-seed the database
+  ```bash
+  npx prisma migrate reset
+  ```
+
+## Deployment notes
+
+The project is configured for Vercel deployment. In Vercel, add the same environment variables listed above, make sure your PostgreSQL database is reachable from the app runtime, and deploy the repository normally.
+
+Vercel will run the build script defined in package.json, which includes Prisma generation and database migrations.

@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+enum FdStatus {
+  ACTIVE
+  MATURED
+  RENEWED
+  WITHDRAWN
+}
+
+enum TransactionType {
+  CREATE
+  RENEW
+  WITHDRAW
+  ADD
+}
+
+model Family {
+  id        String   @id @default(uuid())
+  name      String
+  users     User[]
+  fds       FD[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("families")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(VIEWER)
+  familyId  String
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model FD {
+  id              String          @id @default(uuid())
+  accountNumber   String
+  receiptNumber   String
+  holderName      String
+  startDate       DateTime
+  endDate         DateTime
+  principalAmount Float
+  withdrawAmount  Float
+  interestEarned  Float
+  interestRate    Float
+  status          FdStatus        @default(ACTIVE)
+  remarks         String?
+  parentFdId      String?
+  parentFd        FD?             @relation("FdRenewalHistory", fields: [parentFdId], references: [id])
+  childFds        FD[]            @relation("FdRenewalHistory")
+  isDeleted       Boolean         @default(false)
+  familyId        String
+  family          Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  transactions    FDTransaction[]
+
+  @@unique([familyId, accountNumber, receiptNumber])
+  @@map("fds")
+}
+
+model FDTransaction {
+  id              String          @id @default(uuid())
+  fdId            String
+  fd              FD              @relation(fields: [fdId], references: [id], onDelete: Cascade)
+  transactionType TransactionType
+  amount          Float
+  notes           String?
+  createdAt       DateTime        @default(now())
+
+  @@map("fd_transactions")
+}
