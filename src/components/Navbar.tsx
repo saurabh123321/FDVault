@@ -38,7 +38,15 @@ export default function Navbar({ user }: NavbarProps) {
   ];
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' });
+    const callbackUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/login`
+      : '/login';
+
+    try {
+      await signOut({ callbackUrl, redirect: true });
+    } catch {
+      window.location.href = callbackUrl;
+    }
   };
 
   return (
