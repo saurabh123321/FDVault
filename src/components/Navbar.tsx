@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { 
   TrendingUp, 
@@ -27,6 +27,7 @@ interface NavbarProps {
 
 export default function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
@@ -38,14 +39,10 @@ export default function Navbar({ user }: NavbarProps) {
   ];
 
   const handleLogout = async () => {
-    const callbackUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/login`
-      : '/login';
-
     try {
-      await signOut({ callbackUrl, redirect: true });
-    } catch {
-      window.location.href = callbackUrl;
+      await signOut({ redirect: false });
+    } finally {
+      router.replace('/login');
     }
   };
 
